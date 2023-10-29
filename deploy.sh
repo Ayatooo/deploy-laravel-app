@@ -60,13 +60,10 @@ curl -sSL https://packages.sury.org/php/README.txt | sudo bash -x
 sudo apt-get update -y
 sudo apt-get install php8.1-fpm php8.1-cli php8.1-common php8.1-curl php8.1-bcmath php8.1-intl php8.1-mbstring php8.1-xmlrpc php8.1-mcrypt php8.1-mysql php8.1-gd php8.1-xml php8.1-cli php8.1-zip -y
 sudo apt-get install php8.1-fpm libapache2-mod-fcgid -y
-sudo a2enmod proxy_fcgi setenvif 
-sudo a2enconf php8.1-fpm
-sudo systemctl restart apache2
-sudo systemctl status php8.1-fpm
+sudo update-alternatives --config php
 
 sudo mkdir /var/www/$domain
-sudo chown $USER:$USER /var/www/$domain
+sudo chown www-data:www-data /var/www/$domain
 
 # Écrire la configuration Nginx directement dans le fichier
 echo -e "server {\n\
@@ -133,8 +130,6 @@ git clone $git_path /var/www/$domain
 cd /var/www/$domain
 composer install --ignore-platform-reqs
 npm install
-sudo chown -R www-data:www-data storage
-sudo chown -R www-data:www-data bootstrap/cache
 npm run build
 
 # Configurer le fichier .env
