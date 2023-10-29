@@ -1,16 +1,38 @@
 #!/bin/bash
 
-# Générer une clé SSH
-read -p "Veuillez entrer le chemin complet pour votre nouvelle clé SSH eg. /home/debian/.ssh/id_rsa_name (appuyez sur Entrée pour utiliser le chemin par défaut) : " ssh_key_path_and_name
-if [ -z "$ssh_key_path" ]; then
-    ssh_key_path="$ssh_key_path_and_name"
+# Utiliser les arguments de la ligne de commande
+ssh_key_path_and_name="$1"
+domain="$2"
+db_name="$3"
+db_user="$4"
+db_password="$5"
+git_path="$6"
+
+# Afficher les variables
+echo "Chemin de la clé SSH : $ssh_key_path_and_name"
+echo "Nom de domaine : $domain"
+echo "Nom de la base de données : $db_name"
+echo "Nom d'utilisateur de la base de données : $db_user"
+echo "Mot de passe de la base de données : $db_password"
+echo "Chemin du repo Git en SSH : $git_path"
+
+# Demander à l'utilisateur de valider
+read -p "Confirmez-vous les variables ci-dessus ? (y/n) : " confirmation
+if [ "$confirmation" != "y" ]; then
+    echo "Vous n'avez pas confirmé. Le script s'arrête."
+    exit 1
 fi
 
-ssh-keygen -f "$ssh_key_path"
+# Générer une clé SSH
+if [ -z "$ssh_key_path_and_name" ]; then
+    ssh_key_path_and_name="$HOME/.ssh/id_rsa"
+fi
+
+ssh-keygen -f "$ssh_key_path_and_name"
 
 # Afficher la clé SSH générée
 echo -e "\nVoici votre clé SSH générée :"
-cat "$ssh_key_path.pub"
+cat "$ssh_key_path_and_name.pub"
 echo -e "\nVeuillez ajouter cette clé SSH à votre compte GitHub avant de continuer."
 
 # Demander à l'utilisateur de confirmer qu'il a ajouté la clé SSH à GitHub
@@ -20,18 +42,13 @@ if [ "$confirmation" != "y" ]; then
     exit 1
 fi
 
+
 # Demander à l'utilisateur d'entrer les variables
 read -p "Veuillez entrer votre nom de domaine : " domain
 read -p "Veuillez entrer le nom de votre base de données : " db_name
 read -p "Veuillez entrer le nom d'utilisateur de votre base de données : " db_user
 read -p "Veuillez entrer le mot de passe de votre base de données : " db_password
-read -p "Veuillez entrer le nom d'utilisateur Git en SSH : " git_user
-
-domain=$1
-db_name=$2
-db_user=$3
-db_password=$4
-git_path=$5
+read -p "Veuillez entrer le chemin du repo git en SSH : " git_path
 
 # Mettre à jour le système
 sudo apt-get update
@@ -56,12 +73,45 @@ sudo a2enconf php8.1-fpm
 sudo systemctl restart apache2
 sudo systemctl status php8.1-fpm
 
-# Configurer Nginx
 sudo mkdir /var/www/$domain
 sudo chown $USER:$USER /var/www/$domain
 sudo nano /etc/nginx/sites-available/$domain
 
-# Copiez et collez votre configuration Nginx ici, en remplaçant toutes les occurrences de "stampbox" par "$domain"
+# Copiez et collez votre configuration Nginx ici
+cat <<EOF | sudo tee /etc/nginx/sites-available/$domain > /dev/null
+server {
+    listen 80;
+    server_name $domain;
+    root /var/www/$domain/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+EOF
+
 
 # Lancer le reste des commandes avec le domaine spécifié
 sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
