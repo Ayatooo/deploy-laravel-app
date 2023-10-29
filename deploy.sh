@@ -42,13 +42,6 @@ if [ "$confirmation" != "y" ]; then
     exit 1
 fi
 
-# Demander à l'utilisateur d'entrer les variables
-read -p "Veuillez entrer votre nom de domaine : " domain
-read -p "Veuillez entrer le nom de votre base de données : " db_name
-read -p "Veuillez entrer le nom d'utilisateur de votre base de données : " db_user
-read -p "Veuillez entrer le mot de passe de votre base de données : " db_password
-read -p "Veuillez entrer le chemin du repo git en SSH : " git_path
-
 # Mettre à jour le système
 sudo apt-get update
 sudo apt-get upgrade
