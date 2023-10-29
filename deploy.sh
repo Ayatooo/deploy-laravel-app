@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Utiliser les arguments de la ligne de commande
-ssh_key_path_and_name="$1"
-domain="$2"
-db_name="$3"
-db_user="$4"
-db_password="$5"
-git_path="$6"
+# Demander à l'utilisateur d'entrer les variables
+read -p "Veuillez entrer le chemin de la clé SSH (appuyez sur Entrée pour utiliser le chemin par défaut) : " ssh_key_path_and_name
+read -p "Veuillez entrer votre nom de domaine : " domain
+read -p "Veuillez entrer le nom de votre base de données : " db_name
+read -p "Veuillez entrer le nom d'utilisateur de votre base de données : " db_user
+read -p "Veuillez entrer le mot de passe de votre base de données : " db_password
+read -p "Veuillez entrer le chemin du repo git en SSH : " git_path
 
 # Afficher les variables
 echo "Chemin de la clé SSH : $ssh_key_path_and_name"
@@ -41,7 +41,6 @@ if [ "$confirmation" != "y" ]; then
     echo "Vous n'avez pas confirmé. Le script s'arrête."
     exit 1
 fi
-
 
 # Demander à l'utilisateur d'entrer les variables
 read -p "Veuillez entrer votre nom de domaine : " domain
