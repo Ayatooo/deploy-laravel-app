@@ -193,3 +193,7 @@ echo "Base de données: $db_name"
 echo "Utilisateur MySQL: $db_user"
 echo "Mot de passe MySQL: $db_password"
 echo "Utilisateur Git SSH: $git_user"
+
+# Afficher le message de fin
+echo -e "\nLe script est terminé ✅. Vous pouvez maintenant visiter votre site web à l'adresse suivante : https://$domain"
+echo -e "A bientôt ! ⚡️"
