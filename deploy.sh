@@ -60,7 +60,6 @@ curl -sSL https://packages.sury.org/php/README.txt | sudo bash -x
 sudo apt-get update -y
 sudo apt-get install php8.1-fpm php8.1-cli php8.1-common php8.1-curl php8.1-bcmath php8.1-intl php8.1-mbstring php8.1-xmlrpc php8.1-mcrypt php8.1-mysql php8.1-gd php8.1-xml php8.1-cli php8.1-zip -y
 sudo apt-get install php8.1-fpm libapache2-mod-fcgid -y
-sudo update-alternatives --config php
 
 sudo mkdir /var/www/$domain
 sudo chown www-data:www-data /var/www/$domain
@@ -110,6 +109,9 @@ sudo mysql -e "CREATE DATABASE $db_name;"
 sudo mysql -e "CREATE USER '$db_user'@'localhost' IDENTIFIED BY '$db_password';"
 sudo mysql -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'localhost' IDENTIFIED BY '$db_password' WITH GRANT OPTION;"
 sudo mysql -e "FLUSH PRIVILEGES;"
+
+# Définir la version de php souhaitée
+sudo update-alternatives --config php
 
 # Installer Composer
 sudo apt install wget php-cli php-zip unzip -y
