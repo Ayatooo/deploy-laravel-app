@@ -174,6 +174,9 @@ MAIL_FROM_ADDRESS=null
 MAIL_FROM_NAME="\${APP_NAME}"
 EOL
 
+sudo chown -R www-data:www-data /var/www/$domain
+sudo chmod -R 777 /var/www/$domain/storage
+
 php artisan migrate:fresh --seed
 
 php artisan key:generate
