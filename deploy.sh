@@ -67,50 +67,45 @@ sudo systemctl status php8.1-fpm
 
 sudo mkdir /var/www/$domain
 sudo chown $USER:$USER /var/www/$domain
-sudo nano /etc/nginx/sites-available/$domain
 
-# Copiez et collez votre configuration Nginx ici
-cat <<EOF | sudo tee /etc/nginx/sites-available/$domain > /dev/null
-server {
-    listen 80;
-    server_name $domain;
-    root /var/www/$domain/public;
-
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-
-    index index.php;
-
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-}
-EOF
+# Écrire la configuration Nginx directement dans le fichier
+echo -e "server {\n\
+    listen 80;\n\
+    server_name $domain;\n\
+    root /var/www/$domain/public;\n\
+\n\
+    add_header X-Frame-Options \"SAMEORIGIN\";\n\
+    add_header X-Content-Type-Options \"nosniff\";\n\
+\n\
+    index index.php;\n\
+\n\
+    charset utf-8;\n\
+\n\
+    location / {\n\
+        try_files \$uri \$uri/ /index.php?\$query_string;\n\
+    }\n\
+\n\
+    location = /favicon.ico { access_log off; log_not_found off; }\n\
+    location = /robots.txt  { access_log off; log_not_found off; }\n\
+\n\
+    error_page 404 /index.php;\n\
+\n\
+    location ~ \\.php$ {\n\
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;\n\
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+    }\n\
+\n\
+    location ~ /\.(?!well-known).* {\n\
+        deny all;\n\
+    }\n\
+}" | sudo tee /etc/nginx/sites-available/$domain > /dev/null
 
 
 # Lancer le reste des commandes avec le domaine spécifié
-sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
 sudo unlink /etc/nginx/sites-enabled/default
 sudo ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
+sudo nginx -t
 sudo systemctl restart nginx
 
 # Configurer la base de données MySQL
@@ -138,8 +133,8 @@ git clone $git_path /var/www/$domain
 cd /var/www/$domain
 composer install --ignore-platform-reqs
 npm install
-sudo chown -R $USER:www-data storage
-sudo chown -R $USER:www-data bootstrap/cache
+sudo chown -R www-data:www-data storage
+sudo chown -R www-data:www-data bootstrap/cache
 npm run build
 
 # Configurer le fichier .env
@@ -178,6 +173,8 @@ MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS=null
 MAIL_FROM_NAME="\${APP_NAME}"
 EOL
+
+php artisan migrate:fresh --seed
 
 php artisan key:generate
 
